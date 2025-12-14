@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+  <meta charset="UTF-8" />
+  <title>Įmonių analizė v4 – vietinis prototipas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #0f172a;
+      color: #e5e7eb;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #1f2937;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    header h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    header small {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 11px;
+      border: 1px solid #374151;
+      color: #9ca3af;
+      white-space: nowrap;
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 260px 1.4fr 1.2fr;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .panel {
+      background: #020617;
+      border-radius: 10px;
+      border: 1px solid #111827;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+    }
+
+    .panel h2 {
+      font-size: 13px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      color: #d1d5db;
+    }
+
+    label {
+      font-size: 11px;
+      color: #9ca3af;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      background: #020617;
+      border-radius: 6px;
+      border: 1px solid #1f2937;
+      color: #e5e7eb;
+      padding: 6px 8px;
+      font-size: 12px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      max-height: 220px;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #4b5563;
+    }
+
+    .row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .row > * {
+      flex: 1;
+    }
+
+    button {
+      border-radius: 6px;
+      border: 1px solid #1f2937;
+      background: #111827;
+      color: #e5e7eb;
+      font-size: 12px;
+      padding: 6px 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    button.primary {
+      background: #22c55e;
+      border-color: #16a34a;
+      color: #022c22;
+      font-weight: 600;
+    }
+
+    button.danger {
+      background: #b91c1c;
+      border-color: #7f1d1d;
+    }
+
+    button.small {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      padding: 2px 8px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .chip.green {
+      border-color: #16a34a33;
+      color: #4ade80;
+    }
+
+    .chip.yellow {
+      border-color: #facc1533;
+      color: #fde68a;
+    }
+
+    .chip.red {
+      border-color: #f9731633;
+      color: #fed7aa;
+    }
+
+    .risk-score {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .risk-score.low { color: #22c55e; }
+    .risk-score.mid { color: #eab308; }
+    .risk-score.high { color: #f97316; }
+
+    .tag {
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      padding: 2px 8px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #6b7280;
+      margin-bottom: 2px;
+    }
+
+    .history-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      border-radius: 6px;
+      border: 1px solid #020617;
+      padding: 5px 6px;
+      cursor: pointer;
+      background: #020617;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .history-item.active {
+      border-color: #22c55e;
+      background: #022c22;
+    }
+
+    .history-title {
+      font-size: 11px;
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    .history-meta {
+      font-size: 10px;
+      color: #6b7280;
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .pill {
+      padding: 1px 6px;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      font-size: 10px;
+      color: #9ca3af;
+      white-space: nowrap;
+    }
+
+    .flex-grow {
+      flex: 1;
+      min-height: 0;
+    }
+
+    .scroll {
+      overflow-y: auto;
+    }
+
+    .code-block {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      background: #020617;
+      border-radius: 8px;
+      border: 1px solid #111827;
+      padding: 8px;
+      font-size: 11px;
+      white-space: pre-wrap;
+    }
+
+    footer {
+      padding: 6px 10px;
+      font-size: 10px;
+      color: #6b7280;
+      border-top: 1px solid #111827;
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .header-controls{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .lang-select{
+      width:auto;
+      min-width:88px;
+      padding:5px 8px;
+      font-size:11px;
+      border-radius:999px;
+      border:1px solid #374151;
+      background:#020617;
+      color:#e5e7eb;
+    }
+
+    .role-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:4px;
+    }
+    .role-row{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      border:1px solid #111827;
+      border-radius:8px;
+      padding:6px 8px;
+      background:#020617;
+    }
+    .role-name{
+      font-size:11px;
+      color:#9ca3af;
+      flex:1;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .role-pill{
+      font-size:10px;
+      padding:1px 8px;
+      border-radius:999px;
+      border:1px solid #1f2937;
+      color:#9ca3af;
+      white-space:nowrap;
+    }
+    .role-pill.green{border-color:#16a34a33;color:#4ade80;}
+    .role-pill.yellow{border-color:#facc1533;color:#fde68a;}
+    .role-pill.red{border-color:#f9731633;color:#fed7aa;}
+
+    .trust-stars{
+      display:flex;
+      gap:4px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .star{
+      width:18px;
+      height:18px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:6px;
+      border:1px solid #111827;
+      background:#020617;
+      font-size:12px;
+      color:#9ca3af;
+    }
+    .star.on{ color:#fde68a; border-color:#facc1533; }
+
+    @media (max-width: 960px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    /* =========================
+       PRINT → PDF (NEW)
+       ========================= */
+    @media print {
+      header, footer { display: none !important; }
+      main { grid-template-columns: 1fr !important; padding: 0 !important; gap: 0 !important; }
+      /* hide left + right panels, keep center panel for PDF */
+      main > section.panel:nth-child(1),
+      main > section.panel:nth-child(3) { display: none !important; }
+
+      body { background: white !important; color: black !important; }
+      .panel { background: white !important; border: none !important; }
+      .code-block { background: white !important; border: none !important; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <h1 id="ui_title">Įmonių analizė v4 – vietinis AI stuburas (be API)</h1>
+    <small id="ui_subtitle">Paieška · rizika · istorija · auto-saugojimas · laiškų šablonai</small>
+  </div>
+
+  <div class="header-controls">
+    <select id="langSelect" class="lang-select" aria-label="Language">
+      <option value="lt">LT</option>
+      <option value="en">EN</option>
+    </select>
+    <div id="ui_badge" class="badge">Vietinis HTML prototipas · autosave</div>
+  </div>
+</header>
+
+<main>
+  <!-- KAIRĖ: PAIEŠKA + INPUT -->
+  <section class="panel">
+    <h2>
+      <span id="ui_left_title">Įmonė ir kontekstas</span>
+      <span class="tag" id="ui_left_tag">Įvestis</span>
+    </h2>
+
+    <div>
+      <label for="companyName" id="ui_lbl_companyName">Įmonės pavadinimas</label>
+      <input id="companyName" type="text" placeholder="Pvz. UAB LogiTrans Group" />
+    </div>
+
+    <div>
+      <label for="country" id="ui_lbl_country">Šalis / regionas</label>
+      <input id="country" type="text" placeholder="Lietuva, Vokietija, ES ir pan." />
+    </div>
+
+    <div>
+      <label for="context" id="ui_lbl_context">Trumpas kontekstas (iš kur atsirado įmonė, koks santykis)</label>
+      <textarea id="context" placeholder="Pvz. naujas tiekėjas, konkurentas, galimas klientas, skolos rizika ir pan."></textarea>
+    </div>
+
+    <div>
+      <label for="rawData" id="ui_lbl_rawData">Papildoma informacija (vieši faktai, pastabos, kontekstas)</label>
+      <textarea id="rawData" placeholder="Įklijuok tekstą arba savo pastebėjimus apie įmonę."></textarea>
+    </div>
+
+    <div class="row">
+      <button id="btnQuickRisk" class="small">Atlikti pirminę rizikos analizę</button>
+      <button id="btnNew" class="small">Nauja analizė</button>
+      <button id="btnSave" class="small primary">Išsaugoti į istoriją</button>
+      <!-- PDF (NEW) -->
+      <button id="btnExportPdf" class="small">Eksportuoti PDF</button>
+    </div>
+
+    <div class="chips">
+      <span class="chip" id="ui_chip_autosave">Automatinis išsaugojimas (localStorage)</span>
+      <span class="chip" id="ui_chip_localonly">Tik lokali logika – be API</span>
+    </div>
+
+    <div>
+      <div class="section-title" id="ui_sources_title">Duomenų šaltiniai (statusas)</div>
+      <div class="chips">
+        <span class="chip green" id="ui_source_user">✔ Vartotojo įvesti duomenys (naudojami)</span>
+        <span class="chip" id="ui_source_vmi">◌ VMI (planuojama, oficialūs šaltiniai)</span>
+        <span class="chip" id="ui_source_vies">◌ VIES – ES PVM (planuojama, oficialus servisas)</span>
+        <span class="chip" id="ui_source_sodra">◌ Sodra (planuojama, atviri duomenys)</span>
+        <span class="chip" id="ui_source_eurostat">◌ Eurostat / data.europa.eu (planuojama, open data)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CENTRAS: RIZIKA + SCORING -->
+  <section class="panel">
+    <h2>
+      <span id="ui_mid_title">Rizika ir scoring</span>
+      <span id="statusSaved" class="tag">Nepakeista</span>
+    </h2>
+
+    <div class="row">
+      <div>
+        <div class="section-title" id="ui_mid_scoreTitle">Bendras rizikos balas</div>
+        <div id="riskScore" class="risk-score">–</div>
+      </div>
+      <div>
+        <div class="section-title" id="ui_mid_levelTitle">Rizikos lygis</div>
+        <div id="riskLevel" class="chips"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title" id="ui_mid_tagsTitle">Rizikos žymos (lokali taisyklinė logika)</div>
+      <div id="riskTags" class="chips"></div>
+    </div>
+
+    <!-- ROLĖS -->
+    <div>
+      <div class="section-title" id="ui_mid_rolesTitle">Vertinimo perspektyvos</div>
+      <div id="rolesBox" class="role-grid"></div>
+    </div>
+
+    <!-- TRUST -->
+    <div>
+      <div class="section-title" id="ui_mid_trustTitle">Pasitikėjimo lygis</div>
+      <div id="trustBox" class="trust-stars"></div>
+    </div>
+
+    <div>
+      <label for="riskNotes" id="ui_lbl_riskNotes">Trumpas rizikos komentaras</label>
+      <textarea id="riskNotes" placeholder="Pvz. 'Nauja įmonė, mažas kapitalas, neaiškus akcininkas – rekomenduojamas avansas arba mažos kredito ribos.'"></textarea>
+    </div>
+
+    <div class="flex-grow scroll">
+      <div class="section-title" id="ui_mid_summaryTitle">Struktūruota analizės santrauka</div>
+      <div id="analysisSummary" class="code-block">
+# Įmonė: –
+# Šalis: –
+# Santykis: –
+# Rizika: –
+
+Čia bus sugeneruota struktūruota santrauka pagal tavo įvestą informaciją ir lokalią rizikos logiką.
+      </div>
+    </div>
+  </section>
+
+  <!-- DEŠINĖ: LAIŠKAS + ISTORIJA -->
+  <section class="panel">
+    <h2>
+      <span id="ui_right_title">Laiško šablonas ir istorija</span>
+      <span class="tag" id="ui_right_tag">Output + istorija</span>
+    </h2>
+
+    <div>
+      <div class="section-title" id="ui_tone_title">Laiško tonas</div>
+      <div class="chips">
+        <button id="toneNeutral" class="small">Neutralus B2B</button>
+        <button id="toneStrict" class="small">Griežtesnis (rizika / skolos)</button>
+        <button id="toneWarm" class="small">Šiltesnis (naujas klientas)</button>
+      </div>
+    </div>
+
+    <div>
+      <label for="emailTemplate" id="ui_lbl_emailTemplate">Laiško tekstas (gali taisyti ranka)</label>
+      <textarea id="emailTemplate" placeholder="Čia atsiras automatinis laiško tekstas pagal įmonę, riziką ir pasirinktą toną."></textarea>
+    </div>
+
+    <div class="row">
+      <button id="btnGenerateEmail" class="primary small">Sugeneruoti laiško šabloną (lokaliai)</button>
+      <button id="btnCopyEmail" class="small">Kopijuoti</button>
+      <button id="btnClearEmail" class="small danger">Išvalyti</button>
+    </div>
+
+    <div class="section-title" id="ui_history_title">Istorija (lokali · saugoma naršyklėje)</div>
+    <div class="flex-grow scroll">
+      <ul id="historyList" class="history-list"></ul>
+    </div>
+
+    <div class="row">
+      <button id="btnClearHistory" class="small danger">Išvalyti visą istoriją</button>
+      <span id="ui_history_hint" style="font-size:10px;color:#6b7280;">Istorija saugoma tik šiame įrenginyje (localStorage).</span>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span id="ui_footer_left">v4 – vietinis prototipas. Viskas veikia naršyklėje, be serverio ir be API.</span>
+  <span id="ui_footer_right">Auto-save kas 2 sek. jei yra pakeitimų.</span>
+</footer>
+
+<script>
+  // =========================
+  // I18N (LT / EN) – local
+  // =========================
+  const I18N = {
+    lt: {
+      title: "Įmonių analizė v4 – vietinis AI stuburas (be API)",
+      subtitle: "Paieška · rizika · istorija · auto-saugojimas · laiškų šablonai",
+      badge: "Vietinis HTML prototipas · autosave",
+
+      leftTitle: "Įmonė ir kontekstas",
+      leftTag: "Įvestis",
+      lblCompany: "Įmonės pavadinimas",
+      phCompany: "Pvz. UAB LogiTrans Group",
+      lblCountry: "Šalis / regionas",
+      phCountry: "Lietuva, Vokietija, ES ir pan.",
+      lblContext: "Trumpas kontekstas (iš kur atsirado įmonė, koks santykis)",
+      phContext: "Pvz. naujas tiekėjas, konkurentas, galimas klientas, skolos rizika ir pan.",
+      lblRaw: "Papildoma informacija (vieši faktai, pastabos, kontekstas)",
+      phRaw: "Įklijuok tekstą arba savo pastebėjimus apie įmonę.",
+
+      btnAnalyze: "Atlikti pirminę rizikos analizę",
+      btnNew: "Nauja analizė",
+      btnSave: "Išsaugoti į istoriją",
+      btnPdf: "Eksportuoti PDF",
+
+      chipAutosave: "Automatinis išsaugojimas (localStorage)",
+      chipLocal: "Tik lokali logika – be API",
+
+      sourcesTitle: "Duomenų šaltiniai (statusas)",
+      srcUser: "✔ Vartotojo įvesti duomenys (naudojami)",
+      srcVmi: "◌ VMI (planuojama, oficialūs šaltiniai)",
+      srcVies: "◌ VIES – ES PVM (planuojama, oficialus servisas)",
+      srcSodra: "◌ Sodra (planuojama, atviri duomenys)",
+      srcEuro: "◌ Eurostat / data.europa.eu (planuojama, open data)",
+
+      midTitle: "Rizika ir scoring",
+      midScoreTitle: "Bendras rizikos balas",
+      midLevelTitle: "Rizikos lygis",
+      midTagsTitle: "Rizikos žymos (lokali taisyklinė logika)",
+      midRolesTitle: "Vertinimo perspektyvos",
+      midTrustTitle: "Pasitikėjimo lygis",
+      lblRiskNotes: "Trumpas rizikos komentaras",
+      phRiskNotes: "Pvz. 'Nauja įmonė, mažas kapitalas, neaiškus akcininkas – rekomenduojamas avansas arba mažos kredito ribos.'",
+      midSummaryTitle: "Struktūruota analizės santrauka",
+      summaryPlaceholder: `# Įmonė: –\n# Šalis: –\n# Santykis: –\n# Rizika: –\n\nČia bus sugeneruota struktūruota santrauka pagal tavo įvestą informaciją ir lokalią rizikos logiką.`,
+
+      rightTitle: "Laiško šablonas ir istorija",
+      rightTag: "Output + istorija",
+      toneTitle: "Laiško tonas",
+      toneNeutral: "Neutralus B2B",
+      toneStrict: "Griežtesnis (rizika / skolos)",
+      toneWarm: "Šiltesnis (naujas klientas)",
+
+      lblEmail: "Laiško tekstas (gali taisyti ranka)",
+      phEmail: "Čia atsiras automatinis laiško tekstas pagal įmonę, riziką ir pasirinktą toną.",
+      btnGenEmail: "Sugeneruoti laiško šabloną (lokaliai)",
+      btnCopy: "Kopijuoti",
+      btnClear: "Išvalyti",
+
+      historyTitle: "Istorija (lokali · saugoma naršyklėje)",
+      historyEmpty: "Istorija tuščia.",
+      btnClearHistory: "Išvalyti visą istoriją",
+      historyHint: "Istorija saugoma tik šiame įrenginyje (localStorage).",
+
+      footerLeft: "v4 – vietinis prototipas. Viskas veikia naršyklėje, be serverio ir be API.",
+      footerRight: "Auto-save kas 2 sek. jei yra pakeitimų.",
+
+      statusClean: "Nepakeista",
+      statusDirty: "Yra nepersaugotų pakeitimų",
+      statusAutoSaved: "Išsaugota (auto)",
+      statusSavedHistory: "Išsaugota į istoriją",
+      statusLoaded: "Įkelta iš istorijos",
+      statusNew: "Nauja analizė",
+      statusEmailUpdated: "Laiško šablonas atnaujintas",
+      statusCopied: "Laiškas nukopijuotas",
+      confirmClearHistory: "Ar tikrai išvalyti visą istoriją?"
+    },
+
+    en: {
+      title: "Company Checker v4 – local analysis core (no API)",
+      subtitle: "Search · risk · history · auto-save · email templates",
+      badge: "Local HTML prototype · autosave",
+
+      leftTitle: "Company & context",
+      leftTag: "Input",
+      lblCompany: "Company name",
+      phCompany: "e.g. LogiTrans Group LLC",
+      lblCountry: "Country / region",
+      phCountry: "Lithuania, Germany, EU, etc.",
+      lblContext: "Short context (where it came from, relationship)",
+      phContext: "e.g. new supplier, competitor, potential client, payment risk, etc.",
+      lblRaw: "Additional info (public facts, notes, context)",
+      phRaw: "Paste text or your notes about the company.",
+
+      btnAnalyze: "Run initial risk analysis",
+      btnNew: "New analysis",
+      btnSave: "Save to history",
+      btnPdf: "Export PDF",
+
+      chipAutosave: "Auto-save (localStorage)",
+      chipLocal: "Local-only logic – no API",
+
+      sourcesTitle: "Data sources (status)",
+      srcUser: "✔ User input (in use)",
+      srcVmi: "◌ VMI (planned, official sources)",
+      srcVies: "◌ VIES – EU VAT (planned, official service)",
+      srcSodra: "◌ Sodra (planned, open data)",
+      srcEuro: "◌ Eurostat / data.europa.eu (planned, open data)",
+
+      midTitle: "Risk & scoring",
+      midScoreTitle: "Overall risk score",
+      midLevelTitle: "Risk level",
+      midTagsTitle: "Risk tags (local rule-based logic)",
+      midRolesTitle: "Assessment perspectives",
+      midTrustTitle: "Trust level",
+      lblRiskNotes: "Short risk notes",
+      phRiskNotes: "e.g. 'New company, limited track record – recommend advance payment or low credit limits.'",
+      midSummaryTitle: "Structured summary",
+      summaryPlaceholder: `# Company: –\n# Country / region: –\n# Relationship: –\n# Risk: –\n\nA structured summary will be generated based on your inputs and local rule-based logic.`,
+
+      rightTitle: "Email template & history",
+      rightTag: "Output + history",
+      toneTitle: "Email tone",
+      toneNeutral: "Neutral B2B",
+      toneStrict: "Stricter (risk / overdue)",
+      toneWarm: "Warmer (new client)",
+
+      lblEmail: "Email text (you can edit)",
+      phEmail: "An email template will appear here based on the company, risk and selected tone.",
+      btnGenEmail: "Generate email template (local)",
+      btnCopy: "Copy",
+      btnClear: "Clear",
+
+      historyTitle: "History (local · stored in browser)",
+      historyEmpty: "History is empty.",
+      btnClearHistory: "Clear all history",
+      historyHint: "History is stored only on this device (localStorage).",
+
+      footerLeft: "v4 – local prototype. Works in the browser, no server and no API.",
+      footerRight: "Auto-save every 2s when changes exist.",
+
+      statusClean: "Unchanged",
+      statusDirty: "Unsaved changes",
+      statusAutoSaved: "Saved (auto)",
+      statusSavedHistory: "Saved to history",
+      statusLoaded: "Loaded from history",
+      statusNew: "New analysis",
+      statusEmailUpdated: "Email template updated",
+      statusCopied: "Email copied",
+      confirmClearHistory: "Clear all history?"
+    }
+  };
+
+  function getLang() {
+    return localStorage.getItem("cc_lang") || "lt";
+  }
+  function setLang(v) {
+    localStorage.setItem("cc_lang", v);
+  }
+  function langPack() {
+    const l = getLang();
+    return I18N[l] || I18N.lt;
+  }
+  function applyLang() {
+    const L = langPack();
+    document.documentElement.lang = getLang();
+
+    // header
+    document.getElementById("ui_title").textContent = L.title;
+    document.getElementById("ui_subtitle").textContent = L.subtitle;
+    document.getElementById("ui_badge").textContent = L.badge;
+
+    // left
+    document.getElementById("ui_left_title").textContent = L.leftTitle;
+    document.getElementById("ui_left_tag").textContent = L.leftTag;
+    document.getElementById("ui_lbl_companyName").textContent = L.lblCompany;
+    document.getElementById("companyName").placeholder = L.phCompany;
+    document.getElementById("ui_lbl_country").textContent = L.lblCountry;
+    document.getElementById("country").placeholder = L.phCountry;
+    document.getElementById("ui_lbl_context").textContent = L.lblContext;
+    document.getElementById("context").placeholder = L.phContext;
+    document.getElementById("ui_lbl_rawData").textContent = L.lblRaw;
+    document.getElementById("rawData").placeholder = L.phRaw;
+
+    document.getElementById("btnQuickRisk").textContent = L.btnAnalyze;
+    document.getElementById("btnNew").textContent = L.btnNew;
+    document.getElementById("btnSave").textContent = L.btnSave;
+    document.getElementById("btnExportPdf").textContent = L.btnPdf;
+
+    document.getElementById("ui_chip_autosave").textContent = L.chipAutosave;
+    document.getElementById("ui_chip_localonly").textContent = L.chipLocal;
+
+    document.getElementById("ui_sources_title").textContent = L.sourcesTitle;
+    document.getElementById("ui_source_user").textContent = L.srcUser;
+    document.getElementById("ui_source_vmi").textContent = L.srcVmi;
+    document.getElementById("ui_source_vies").textContent = L.srcVies;
+    document.getElementById("ui_source_sodra").textContent = L.srcSodra;
+    document.getElementById("ui_source_eurostat").textContent = L.srcEuro;
+
+    // mid
+    document.getElementById("ui_mid_title").textContent = L.midTitle;
+    document.getElementById("ui_mid_scoreTitle").textContent = L.midScoreTitle;
+    document.getElementById("ui_mid_levelTitle").textContent = L.midLevelTitle;
+    document.getElementById("ui_mid_tagsTitle").textContent = L.midTagsTitle;
+    document.getElementById("ui_mid_rolesTitle").textContent = L.midRolesTitle;
+    document.getElementById("ui_mid_trustTitle").textContent = L.midTrustTitle;
+    document.getElementById("ui_lbl_riskNotes").textContent = L.lblRiskNotes;
+    document.getElementById("riskNotes").placeholder = L.phRiskNotes;
+    document.getElementById("ui_mid_summaryTitle").textContent = L.midSummaryTitle;
+
+    // right
+    document.getElementById("ui_right_title").textContent = L.rightTitle;
+    document.getElementById("ui_right_tag").textContent = L.rightTag;
+    document.getElementById("ui_tone_title").textContent = L.toneTitle;
+    document.getElementById("toneNeutral").textContent = L.toneNeutral;
+    document.getElementById("toneStrict").textContent = L.toneStrict;
+    document.getElementById("toneWarm").textContent = L.toneWarm;
+
+    document.getElementById("ui_lbl_emailTemplate").textContent = L.lblEmail;
+    document.getElementById("emailTemplate").placeholder = L.phEmail;
+    document.getElementById("btnGenerateEmail").textContent = L.btnGenEmail;
+    document.getElementById("btnCopyEmail").textContent = L.btnCopy;
+    document.getElementById("btnClearEmail").textContent = L.btnClear;
+
+    document.getElementById("ui_history_title").textContent = L.historyTitle;
+    document.getElementById("btnClearHistory").textContent = L.btnClearHistory;
+    document.getElementById("ui_history_hint").textContent = L.historyHint;
+
+    // footer
+    document.getElementById("ui_footer_left").textContent = L.footerLeft;
+    document.getElementById("ui_footer_right").textContent = L.footerRight;
+
+    // placeholders for summary if empty
+    if (!state.riskScore) {
+      document.getElementById("analysisSummary").textContent = L.summaryPlaceholder;
+    }
+
+    // rerender UI dependent on language
+    renderRisk();
+    renderHistory();
+  }
+
+  // =========================
+  // Local state
+  // =========================
+  const state = {
+    id: null,
+    companyName: "",
+    country: "",
+    context: "",
+    rawData: "",
+    riskScore: null,
+    riskLevelKey: "unknown", // low/mid/high/unknown
+    riskTagKeys: [],
+    riskNotes: "",
+    emailTemplate: "",
+    tone: "neutral", // neutral/strict/warm
+    updatedAt: null,
+
+    // ROLE SELECTION (NEW)
+    selectedRoles: {
+      business: true,
+      finance: true,
+      logistics: true,
+      sales: true,
+      manager: true
+    }
+  };
+
+  const STORAGE_KEY_CURRENT = "ai_v4_current_analysis";
+  const STORAGE_KEY_HISTORY = "ai_v4_history";
+
+  const $ = (id) => document.getElementById(id);
+
+  function nowIso() { return new Date().toISOString(); }
+
+  function formatShortDate(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const locale = getLang() === "en" ? "en-GB" : "lt-LT";
+    return d.toLocaleString(locale, {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+
+  let dirty = false;
+  let lastAutosaveSnapshot = "";
+
+  function setStatus(text, temporary = false) {
+    const el = $("statusSaved");
+    el.textContent = text;
+    if (temporary) {
+      setTimeout(() => {
+        el.textContent = langPack().statusAutoSaved;
+      }, 2000);
+    }
+  }
+
+  function markDirty() {
+    dirty = true;
+    setStatus(langPack().statusDirty);
+  }
+
+  function snapshotForAutosave() {
+    // small stable snapshot to detect changes
+    return JSON.stringify({
+      companyName: $("companyName").value.trim(),
+      country: $("country").value.trim(),
+      context: $("context").value.trim(),
+      rawData: $("rawData").value.trim(),
+      riskNotes: $("riskNotes").value.trim(),
+      emailTemplate: $("emailTemplate").value.trim(),
+      tone: state.tone,
+      riskScore: state.riskScore,
+      riskLevelKey: state.riskLevelKey,
+      riskTagKeys: state.riskTagKeys,
+      selectedRoles: state.selectedRoles
+    });
+  }
+
+  function syncStateFromInputs() {
+    state.companyName = $("companyName").value.trim();
+    state.country = $("country").value.trim();
+    state.context = $("context").value.trim();
+    state.rawData = $("rawData").value.trim();
+    state.riskNotes = $("riskNotes").value.trim();
+    state.emailTemplate = $("emailTemplate").value.trim();
+  }
+
+  function syncInputsFromState() {
+    $("companyName").value = state.companyName || "";
+    $("country").value = state.country || "";
+    $("context").value = state.context || "";
+    $("rawData").value = state.rawData || "";
+    $("riskNotes").value = state.riskNotes || "";
+    $("emailTemplate").value = state.emailTemplate || "";
+
+    renderRisk();
+  }
+
+  function saveCurrentToLocal() {
+    syncStateFromInputs();
+    state.updatedAt = nowIso();
+    localStorage.setItem(STORAGE_KEY_CURRENT, JSON.stringify(state));
+  }
+
+  function loadCurrentFromLocal() {
+    const raw = localStorage.getItem(STORAGE_KEY_CURRENT);
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw);
+      Object.assign(state, data);
+      // ensure selectedRoles exists (backward compatibility)
+      if (!state.selectedRoles) {
+        state.selectedRoles = { business:true, finance:true, logistics:true, sales:true, manager:true };
+      }
+    } catch (e) {
+      console.error("Failed to read current analysis:", e);
+    }
+  }
+
+  function getHistory() {
+    const raw = localStorage.getItem(STORAGE_KEY_HISTORY);
+    if (!raw) return [];
+    try {
+      return JSON.parse(raw);
+    } catch (e) {
+      console.error("Failed to read history:", e);
+      return [];
+    }
+  }
+
+  function setHistory(list) {
+    localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(list));
+  }
+
+  function addToHistory() {
+    syncStateFromInputs();
+    const history = getHistory();
+    const id = state.id || "AN-" + Date.now();
+    const item = {
+      id,
+      companyName: state.companyName,
+      country: state.country,
+      riskScore: state.riskScore,
+      riskLevelKey: state.riskLevelKey,
+      summary: state.riskNotes || "",
+      updatedAt: nowIso()
+    };
+    state.id = id;
+    history.unshift(item);
+    setHistory(history);
+    dirty = false;
+    setStatus(langPack().statusSavedHistory, true);
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const history = getHistory();
+    const list = $("historyList");
+    list.innerHTML = "";
+
+    if (!history.length) {
+      const li = document.createElement("li");
+      li.style.fontSize = "10px";
+      li.style.color = "#6b7280";
+      li.textContent = langPack().historyEmpty;
+      list.appendChild(li);
+      return;
+    }
+
+    history.forEach((item) => {
+      const li = document.createElement("li");
+      li.className = "history-item" + (item.id === state.id ? " active" : "");
+      li.dataset.id = item.id;
+
+      const title = document.createElement("div");
+      title.className = "history-title";
+      title.textContent = item.companyName || (getLang()==="en" ? "Untitled" : "Be pavadinimo");
+
+      const meta = document.createElement("div");
+      meta.className = "history-meta";
+
+      const risk = document.createElement("span");
+      risk.className = "pill";
+      const rl = riskLevelText(item.riskLevelKey);
+      risk.textContent = (rl || (getLang()==="en" ? "Not rated" : "Neįvertinta")) + (item.riskScore ? ` · ${item.riskScore}/10` : "");
+
+      const date = document.createElement("span");
+      date.textContent = formatShortDate(item.updatedAt);
+
+      meta.appendChild(risk);
+      meta.appendChild(date);
+
+      li.appendChild(title);
+      li.appendChild(meta);
+
+      li.addEventListener("click", () => loadFromHistory(item.id));
+      list.appendChild(li);
+    });
+  }
+
+  function loadFromHistory(id) {
+    const history = getHistory();
+    const item = history.find((x) => x.id === id);
+    if (!item) return;
+
+    state.id = item.id;
+    state.companyName = item.companyName || "";
+    state.country = item.country || "";
+    state.riskScore = item.riskScore || null;
+    state.riskLevelKey = item.riskLevelKey || "unknown";
+    state.riskNotes = item.summary || "";
+    state.updatedAt = item.updatedAt || nowIso();
+
+    syncInputsFromState();
+    generateSummary();
+    renderHistory();
+    dirty = false;
+    setStatus(langPack().statusLoaded);
+  }
+
+  // =========================
+  // Risk logic – local rules
+  // (LT + EN keyword support)
+  // =========================
+
+  // Tag keys -> localized text
+  const TAGS = {
+    insolvency: { lt: "Bankroto / nemokumo rizika", en: "Insolvency / bankruptcy risk" },
+    overdue: { lt: "Skolų / vėluojančių apmokėjimų rizika", en: "Overdue payments / debt risk" },
+    young: { lt: "Labai jauna įmonė", en: "Very young company" },
+    dependency: { lt: "Priklausomybė nuo nedaugelio klientų", en: "Dependency on few customers" },
+    logistics: { lt: "Logistikos sektorius", en: "Logistics sector" },
+    geo: { lt: "Geopolitinė / regiono rizika", en: "Geopolitical / regional risk" },
+    goodrep: { lt: "Teigiama reputacija / ilgalaikiai santykiai", en: "Positive reputation / long-term relationship" },
+    transparency: { lt: "Finansų skaidrumas / ataskaitos", en: "Financial transparency / reports" }
+  };
+
+  function tagText(key) {
+    const l = getLang();
+    return (TAGS[key] && TAGS[key][l]) || key;
+  }
+
+  function riskLevelText(levelKey) {
+    const l = getLang();
+    const map = {
+      lt: { low: "Žema", mid: "Vidutinė", high: "Aukšta", unknown: "Neaiški" },
+      en: { low: "Low",  mid: "Medium",   high: "High",  unknown: "Unclear" }
+    };
+    return (map[l] && map[l][levelKey]) || levelKey;
+  }
+
+  // Roles – localized names
+  function roleName(key){
+    const l = getLang();
+    const map = {
+      lt: {
+        business: "Verslo analitikas",
+        finance: "Finansų / rizikų analitikas",
+        logistics: "Logistikos specialistas",
+        sales: "B2B pardavimai",
+        manager: "Vadovas (galutinis sprendimas)"
+      },
+      en: {
+        business: "Business analyst",
+        finance: "Finance / risk analyst",
+        logistics: "Logistics specialist",
+        sales: "B2B sales",
+        manager: "Manager (final decision)"
+      }
+    };
+    return (map[l] && map[l][key]) || key;
+  }
+
+  function roleLevelColor(levelKey){
+    if (levelKey === "low") return "green";
+    if (levelKey === "mid") return "yellow";
+    if (levelKey === "high") return "red";
+    return "";
+  }
+
+  function computeRisk() {
+    syncStateFromInputs();
+
+    let score = 5;
+    const tagKeys = [];
+
+    const text = (state.rawData + " " + state.context).toLowerCase();
+
+    // insolvency/bankruptcy
+    if (/(bankrot|nemokum|likviduoj|insolv|bankrupt|liquidat)/i.test(text)) {
+      score += 2;
+      tagKeys.push("insolvency");
+    }
+
+    // overdue/debt
+    if (/(skola|neapmok|delspinigi|pradelst|overdue|unpaid|late payment|debt)/i.test(text)) {
+      score += 2;
+      tagKeys.push("overdue");
+    }
+
+    // young
+    if (/(nauja įmonė|įkurta 2023|įkurta 2024|įkurta 2025|new company|founded 2023|founded 2024|founded 2025)/i.test(text)) {
+      score += 1;
+      tagKeys.push("young");
+    }
+
+    // dependency
+    if (/(didžiausias klientas|1 klientas|priklausomybė|single customer|one customer|dependency)/i.test(text)) {
+      score += 1;
+      tagKeys.push("dependency");
+    }
+
+    // logistics sector
+    if (/(logistik|transport|vežėj|freight|carrier|logistics|transportation)/i.test(text)) {
+      tagKeys.push("logistics");
+    }
+
+    // geopolitical
+    if (/(rusij|baltarusi|ukrain|russia|belarus|ukraine)/i.test(text)) {
+      score += 1;
+      tagKeys.push("geo");
+    }
+
+    // positive
+    if (/(geras reputacij|patikim|ilgamet|nuolatini|trusted|reliable|long-term|positive reputation)/i.test(text)) {
+      score -= 1;
+      tagKeys.push("goodrep");
+    }
+
+    // transparency
+    if (/(skaidrum|audit|finans|ataskait|transparen|audit|financial report|statements)/i.test(text)) {
+      score -= 1;
+      tagKeys.push("transparency");
+    }
+
+    // normalize
+    score = Math.max(1, Math.min(10, score));
+
+    // level key
+    let levelKey = "unknown";
+    if (score <= 3) levelKey = "low";
+    else if (score <= 6) levelKey = "mid";
+    else levelKey = "high";
+
+    state.riskScore = score;
+    state.riskLevelKey = levelKey;
+    state.riskTagKeys = Array.from(new Set(tagKeys)); // unique
+  }
+
+  function computeRolesAndTrust() {
+    const score = state.riskScore;
+    const tags = new Set(state.riskTagKeys || []);
+
+    let business = "mid";
+    if (tags.has("insolvency") || tags.has("young")) business = "high";
+    else if (tags.has("goodrep") && !tags.has("overdue")) business = "low";
+
+    let finance = "mid";
+    if (tags.has("insolvency") || tags.has("overdue")) finance = "high";
+    else if (tags.has("transparency") && tags.has("goodrep")) finance = "low";
+
+    let logistics = "mid";
+    if (tags.has("insolvency") || tags.has("overdue")) logistics = "high";
+    else if (score <= 3) logistics = "low";
+
+    let sales = "mid";
+    if (score >= 7) sales = "high";
+    else if (score <= 3 && tags.has("goodrep")) sales = "low";
+
+    const highs = [business, finance, logistics, sales].filter(x => x === "high").length;
+    const lows  = [business, finance, logistics, sales].filter(x => x === "low").length;
+
+    let manager = state.riskLevelKey;
+    if (highs >= 2) manager = "high";
+    else if (lows >= 3 && highs === 0) manager = "low";
+    else if (highs === 0 && (business === "mid" || finance === "mid" || logistics === "mid" || sales === "mid")) manager = "mid";
+
+    let trust = 3;
+    if (tags.has("goodrep")) trust += 1;
+    if (tags.has("transparency")) trust += 1;
+    if (tags.has("overdue")) trust -= 1;
+    if (tags.has("insolvency")) trust -= 2;
+    if (state.riskLevelKey === "high") trust -= 1;
+    if (state.riskLevelKey === "low") trust += 0;
+
+    trust = Math.max(1, Math.min(5, trust));
+
+    return { business, finance, logistics, sales, manager, trust };
+  }
+
+  // ROLE KEYS (NEW)
+  const ROLE_KEYS = ["business", "finance", "logistics", "sales", "manager"];
+
+  function renderRolesAndTrust() {
+    const box = $("rolesBox");
+    const trustBox = $("trustBox");
+    box.innerHTML = "";
+    trustBox.innerHTML = "";
+
+    if (!state.riskScore) return;
+
+    const r = computeRolesAndTrust();
+
+    // Roles with user selection (NEW)
+    ROLE_KEYS.forEach(key => {
+      const row = document.createElement("div");
+      row.className = "role-row";
+
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = !!state.selectedRoles[key];
+      cb.addEventListener("change", () => {
+        state.selectedRoles[key] = cb.checked;
+        generateSummary();
+        markDirty();
+      });
+
+      const name = document.createElement("div");
+      name.className = "role-name";
+      name.textContent = roleName(key);
+
+      const pill = document.createElement("span");
+      pill.className = "role-pill " + roleLevelColor(r[key]);
+      pill.textContent = riskLevelText(r[key]);
+      if (!state.selectedRoles[key]) pill.style.opacity = "0.3";
+
+      row.appendChild(cb);
+      row.appendChild(name);
+      row.appendChild(pill);
+      box.appendChild(row);
+    });
+
+    // Stars (unchanged)
+    for (let i=1; i<=5; i++){
+      const s = document.createElement("span");
+      s.className = "star" + (i <= r.trust ? " on" : "");
+      s.textContent = "★";
+      trustBox.appendChild(s);
+    }
+  }
+
+  function renderRisk() {
+    const rs = $("riskScore");
+    const rl = $("riskLevel");
+    const rt = $("riskTags");
+
+    if (!state.riskScore) {
+      rs.textContent = "–";
+      rs.className = "risk-score";
+      rl.innerHTML = "";
+      rt.innerHTML = "";
+      $("rolesBox").innerHTML = "";
+      $("trustBox").innerHTML = "";
+      $("analysisSummary").textContent = langPack().summaryPlaceholder;
+      return;
+    }
+
+    rs.textContent = state.riskScore;
+
+    let cls = "risk-score ";
+    if (state.riskLevelKey === "low") cls += "low";
+    else if (state.riskLevelKey === "mid") cls += "mid";
+    else cls += "high";
+    rs.className = cls;
+
+    rl.innerHTML = "";
+    const chip = document.createElement("span");
+    chip.className = "chip " + (state.riskLevelKey === "low" ? "green" : state.riskLevelKey === "mid" ? "yellow" : "red");
+    chip.textContent = riskLevelText(state.riskLevelKey);
+    rl.appendChild(chip);
+
+    rt.innerHTML = "";
+    (state.riskTagKeys || []).forEach((k) => {
+      const tag = document.createElement("span");
+      tag.className = "chip";
+      tag.textContent = tagText(k);
+      rt.appendChild(tag);
+    });
+
+    renderRolesAndTrust();
+    generateSummary();
+  }
+
+  function generateSummary() {
+    const name = state.companyName || "–";
+    const country = state.country || "–";
+    const ctx = state.context || (getLang()==="en" ? "(not provided)" : "(neaprašyta)");
+    const score = state.riskScore != null ? state.riskScore + "/10" : (getLang()==="en" ? "not rated" : "neįvertinta");
+    const level = state.riskLevelKey ? riskLevelText(state.riskLevelKey) : "–";
+    const notes = state.riskNotes || (getLang()==="en" ? "(no notes)" : "(nėra pastabų)");
+
+    const tags = (state.riskTagKeys || []).length
+      ? "- " + (state.riskTagKeys || []).map(tagText).join("\n- ")
+      : (getLang()==="en" ? "(no tags)" : "(nėra išskirtų rizikos žymų)");
+
+    const roles = computeRolesAndTrust();
+
+    // ONLY SELECTED ROLES (NEW)
+    const rolesText = ROLE_KEYS
+      .filter(k => !!state.selectedRoles[k])
+      .map(k => `${roleName(k)}: ${riskLevelText(roles[k])}`)
+      .join("\n- ");
+
+    const trustStars = "★".repeat(roles.trust) + "☆".repeat(5-roles.trust);
+
+    const summary = (getLang()==="en")
+      ? [
+          `# Company: ${name}`,
+          `# Country / region: ${country}`,
+          `# Relationship: ${ctx}`,
+          "",
+          `Risk score: ${score}`,
+          `Risk level: ${level}`,
+          "",
+          `Risk tags:`,
+          `${tags}`,
+          "",
+          `Perspectives:`,
+          `- ${rolesText}`,
+          "",
+          `Trust level: ${trustStars}`,
+          "",
+          `Notes:`,
+          `${notes}`
+        ].join("\n")
+      : [
+          `# Įmonė: ${name}`,
+          `# Šalis / regionas: ${country}`,
+          `# Santykis: ${ctx}`,
+          "",
+          `Rizikos balas: ${score}`,
+          `Rizikos lygis: ${level}`,
+          "",
+          `Rizikos žymos:`,
+          `${tags}`,
+          "",
+          `Vertinimo perspektyvos:`,
+          `- ${rolesText}`,
+          "",
+          `Pasitikėjimo lygis: ${trustStars}`,
+          "",
+          `Trumpas komentaras:`,
+          `${notes}`
+        ].join("\n");
+
+    $("analysisSummary").textContent = summary;
+  }
+
+  // =========================
+  // Email templates (LT/EN)
+  // =========================
+  function generateEmail() {
+    syncStateFromInputs();
+
+    const l = getLang();
+    const name = state.companyName || (l==="en" ? "your company" : "Jūsų įmonė");
+    const level = state.riskLevelKey ? riskLevelText(state.riskLevelKey) : (l==="en" ? "Unclear" : "Neaiški");
+    const score = state.riskScore != null ? state.riskScore + "/10" : (l==="en" ? "not rated" : "neįvertinta");
+    const notes = state.riskNotes || "";
+    const tone = state.tone || "neutral";
+
+    let intro = "";
+    let body = "";
+    let closing = "";
+
+    if (l === "lt") {
+      closing = "Pagarbiai,\n[vardas pavardė]\n[įmonė]\n[kontaktai]";
+      if (tone === "neutral") {
+        intro = `Laba diena,\n\nrašau dėl bendradarbiavimo ir vidinės rizikos peržiūros, susijusios su įmone ${name}.`;
+      } else if (tone === "strict") {
+        intro = `Laba diena,\n\nvertindami tolesnio bendradarbiavimo sąlygas su įmone ${name}, atlikome vidinę rizikos analizę.`;
+      } else {
+        intro = `Laba diena,\n\nkreipiuosi dėl galimo bendradarbiavimo su įmone ${name} ir trumpai dalinuosi vidine rizikos apžvalga.`;
+      }
+
+      body += `\n\nVidinė rizikos apžvalga:\n- Bendras rizikos balas: ${score}\n- Rizikos lygis: ${level}\n`;
+      if (notes) body += `- Pagrindinės pastabos: ${notes}\n`;
+
+      if (tone === "strict") {
+        body += `\nAtsižvelgdami į aukščiau nurodytus faktus, svarstome konservatyvesnes atsiskaitymo sąlygas (pvz., trumpesnius terminus, avansinius mokėjimus ar ribotą kredito limitą).\n`;
+      } else if (tone === "neutral") {
+        body += `\nŠi informacija naudojama tik vidinei rizikos kontrolei ir bendradarbiavimo sąlygų nustatymui.\n`;
+      } else {
+        body += `\nŠi informacija yra mūsų vidinė analizė, skirta tinkamam bendradarbiavimo sąlygų suderinimui ir rizikos suvaldymui.\n`;
+      }
+    } else {
+      closing = "Best regards,\n[full name]\n[company]\n[contacts]";
+      if (tone === "neutral") {
+        intro = `Hello,\n\nI’m reaching out regarding cooperation and our internal risk review related to ${name}.`;
+      } else if (tone === "strict") {
+        intro = `Hello,\n\nAs part of setting cooperation terms with ${name}, we completed an internal risk assessment.`;
+      } else {
+        intro = `Hello,\n\nI’m contacting you about potential cooperation with ${name} and sharing a brief internal risk overview.`;
+      }
+
+      body += `\n\nInternal risk overview:\n- Overall risk score: ${score}\n- Risk level: ${level}\n`;
+      if (notes) body += `- Key notes: ${notes}\n`;
+
+      if (tone === "strict") {
+        body += `\nBased on the above, we may apply more conservative payment terms (e.g., shorter payment deadlines, advance payments, or limited credit exposure).\n`;
+      } else if (tone === "neutral") {
+        body += `\nThis information is used for internal risk control and setting cooperation terms.\n`;
+      } else {
+        body += `\nThis is an internal overview intended to align cooperation terms and manage risk appropriately.\n`;
+      }
+    }
+
+    const full = `${intro}${body}\n${closing}`;
+    $("emailTemplate").value = full;
+    state.emailTemplate = full;
+    markDirty();
+  }
+
+  // =========================
+  // Clipboard
+  // =========================
+  function copyToClipboard(text) {
+    if (!navigator.clipboard) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      return;
+    }
+    navigator.clipboard.writeText(text).catch((err) => console.error("Copy failed", err));
+  }
+
+  // =========================
+  // Events
+  // =========================
+  function initEvents() {
+    ["companyName","country","context","rawData","riskNotes","emailTemplate"].forEach((id) => {
+      $(id).addEventListener("input", markDirty);
+    });
+
+    $("btnQuickRisk").addEventListener("click", () => {
+      computeRisk();
+      renderRisk();
+      markDirty();
+    });
+
+    $("btnSave").addEventListener("click", addToHistory);
+
+    $("btnExportPdf").addEventListener("click", () => {
+      window.print();
+    });
+
+    $("btnNew").addEventListener("click", () => {
+      Object.assign(state, {
+        id: null,
+        companyName: "",
+        country: "",
+        context: "",
+        rawData: "",
+        riskScore: null,
+        riskLevelKey: "unknown",
+        riskTagKeys: [],
+        riskNotes: "",
+        emailTemplate: "",
+        tone: "neutral",
+        updatedAt: null,
+        selectedRoles: { business:true, finance:true, logistics:true, sales:true, manager:true }
+      });
+      syncInputsFromState();
+      $("analysisSummary").textContent = langPack().summaryPlaceholder;
+      dirty = false;
+      setStatus(langPack().statusNew);
+    });
+
+    $("btnClearHistory").addEventListener("click", () => {
+      if (!confirm(langPack().confirmClearHistory)) return;
+      setHistory([]);
+      renderHistory();
+      dirty = false;
+      setStatus(getLang()==="en" ? "History cleared" : "Istorija išvalyta");
+    });
+
+    $("btnGenerateEmail").addEventListener("click", () => {
+      generateEmail();
+      setStatus(langPack().statusEmailUpdated);
+    });
+
+    $("btnCopyEmail").addEventListener("click", () => {
+      const text = $("emailTemplate").value || "";
+      if (!text.trim()) return;
+      copyToClipboard(text);
+      setStatus(langPack().statusCopied, true);
+    });
+
+    $("btnClearEmail").addEventListener("click", () => {
+      $("emailTemplate").value = "";
+      state.emailTemplate = "";
+      markDirty();
+    });
+
+    $("toneNeutral").addEventListener("click", () => {
+      state.tone = "neutral";
+      setStatus(getLang()==="en" ? "Tone: neutral" : "Tonas: neutralus");
+      markDirty();
+    });
+    $("toneStrict").addEventListener("click", () => {
+      state.tone = "strict";
+      setStatus(getLang()==="en" ? "Tone: stricter" : "Tonas: griežtesnis");
+      markDirty();
+    });
+    $("toneWarm").addEventListener("click", () => {
+      state.tone = "warm";
+      setStatus(getLang()==="en" ? "Tone: warmer" : "Tonas: šiltesnis");
+      markDirty();
+    });
+
+    // Language
+    const langSelect = $("langSelect");
+    langSelect.addEventListener("change", (e) => {
+      setLang(e.target.value);
+      applyLang();
+      markDirty();
+    });
+
+    // Auto-save every 2 seconds ONLY if changed
+    setInterval(() => {
+      const snap = snapshotForAutosave();
+      if (snap === lastAutosaveSnapshot) return;
+      lastAutosaveSnapshot = snap;
+
+      saveCurrentToLocal();
+      dirty = false;
+      setStatus(langPack().statusAutoSaved);
+    }, 2000);
+  }
+
+  // =========================
+  // Init
+  // =========================
+  function init() {
+    const savedLang = getLang();
+    $("langSelect").value = savedLang;
+
+    loadCurrentFromLocal();
+    syncInputsFromState();
+
+    applyLang();
+    generateSummary();
+    renderHistory();
+    initEvents();
+
+    setStatus(langPack().statusClean);
+    lastAutosaveSnapshot = snapshotForAutosave();
+  }
+
+  init();
+</script>
+</body>
+</html>
