@@ -362,18 +362,102 @@
     }
 
     /* =========================
-       PRINT → PDF (NEW)
+       ABOUT MODAL (NEW)
+       ========================= */
+    .modal-backdrop{
+      position: fixed;
+      inset: 0;
+      background: rgba(2,6,23,0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 9999;
+    }
+    .modal{
+      width: min(980px, 100%);
+      max-height: min(86vh, 900px);
+      overflow: auto;
+      background: #020617;
+      border: 1px solid #111827;
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+      padding: 12px;
+    }
+    .modal-header{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 6px 6px 10px 6px;
+      border-bottom: 1px solid #111827;
+    }
+    .modal-title{
+      font-size: 13px;
+      color: #e5e7eb;
+      margin: 0;
+    }
+    .modal-body{
+      padding: 10px 6px 6px 6px;
+    }
+    .markdown{
+      font-size: 12px;
+      color: #e5e7eb;
+      line-height: 1.5;
+    }
+    .markdown h1,.markdown h2,.markdown h3{
+      margin: 12px 0 6px;
+      font-size: 13px;
+    }
+    .markdown p{ margin: 6px 0; color:#d1d5db; }
+    .markdown ul{ margin: 6px 0 6px 18px; color:#d1d5db; }
+    .markdown li{ margin: 2px 0; }
+    .markdown hr{ border: none; border-top: 1px solid #111827; margin: 12px 0; }
+
+    /* =========================
+       PRINT → PDF
        ========================= */
     @media print {
       header, footer { display: none !important; }
+
+      /* Default print = main center panel only (as before) */
       main { grid-template-columns: 1fr !important; padding: 0 !important; gap: 0 !important; }
-      /* hide left + right panels, keep center panel for PDF */
       main > section.panel:nth-child(1),
       main > section.panel:nth-child(3) { display: none !important; }
 
       body { background: white !important; color: black !important; }
       .panel { background: white !important; border: none !important; }
       .code-block { background: white !important; border: none !important; }
+
+      /* About print mode (NEW): print only modal content */
+      body.print-about main { display: none !important; }
+      body.print-about .modal-backdrop{
+        display: flex !important;
+        position: static !important;
+        inset: auto !important;
+        background: transparent !important;
+        padding: 0 !important;
+      }
+      body.print-about .modal{
+        width: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
+        background: white !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+      body.print-about .modal-header .row{ display:none !important; }
+      body.print-about .modal-header{
+        border-bottom: 1px solid #e5e7eb !important;
+        padding: 0 0 8px 0 !important;
+      }
+      body.print-about .markdown, body.print-about .markdown p, body.print-about .markdown ul{
+        color: black !important;
+      }
+      body.print-about .markdown hr{
+        border-top: 1px solid #e5e7eb !important;
+      }
     }
   </style>
 </head>
@@ -385,6 +469,7 @@
   </div>
 
   <div class="header-controls">
+    <button id="btnAbout" class="small">Apie</button>
     <select id="langSelect" class="lang-select" aria-label="Language">
       <option value="lt">LT</option>
       <option value="en">EN</option>
@@ -425,7 +510,6 @@
       <button id="btnQuickRisk" class="small">Atlikti pirminę rizikos analizę</button>
       <button id="btnNew" class="small">Nauja analizė</button>
       <button id="btnSave" class="small primary">Išsaugoti į istoriją</button>
-      <!-- PDF (NEW) -->
       <button id="btnExportPdf" class="small">Eksportuoti PDF</button>
     </div>
 
@@ -469,13 +553,11 @@
       <div id="riskTags" class="chips"></div>
     </div>
 
-    <!-- ROLĖS -->
     <div>
       <div class="section-title" id="ui_mid_rolesTitle">Vertinimo perspektyvos</div>
       <div id="rolesBox" class="role-grid"></div>
     </div>
 
-    <!-- TRUST -->
     <div>
       <div class="section-title" id="ui_mid_trustTitle">Pasitikėjimo lygis</div>
       <div id="trustBox" class="trust-stars"></div>
@@ -542,6 +624,22 @@
   <span id="ui_footer_left">v4 – vietinis prototipas. Viskas veikia naršyklėje, be serverio ir be API.</span>
   <span id="ui_footer_right">Auto-save kas 2 sek. jei yra pakeitimų.</span>
 </footer>
+
+<!-- ABOUT MODAL (NEW) -->
+<div id="aboutBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="aboutTitle" class="modal-title">Aprašymas</h3>
+      <div class="row" style="gap:6px; margin:0; flex:0;">
+        <button id="btnAboutPrint" class="small">PDF</button>
+        <button id="btnAboutClose" class="small danger">Uždaryti</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div id="aboutContent" class="markdown"></div>
+    </div>
+  </div>
+</div>
 
 <script>
   // =========================
@@ -619,7 +717,63 @@
       statusNew: "Nauja analizė",
       statusEmailUpdated: "Laiško šablonas atnaujintas",
       statusCopied: "Laiškas nukopijuotas",
-      confirmClearHistory: "Ar tikrai išvalyti visą istoriją?"
+      confirmClearHistory: "Ar tikrai išvalyti visą istoriją?",
+
+      aboutBtn: "Apie",
+      aboutTitle: "Įmonių rizikos analizė (DEMO prototipas)",
+      aboutPrint: "PDF",
+      aboutClose: "Uždaryti",
+      aboutHtml: `
+        <h2>Įmonių rizikos analizė (DEMO prototipas)</h2>
+        <p><b>Autorius:</b> Donatas Vitenas<br/>
+        <b>Statusas:</b> DEMO / Phase 1<br/>
+        <b>Veikimo principas:</b> vietinis (naršyklėje), be serverio ir be API</p>
+        <hr/>
+        <h3>Projekto aprašymas</h3>
+        <p>Šis projektas yra <b>asmeninis prototipas</b>, skirtas pademonstruoti <b>įmonių rizikos vertinimo logiką</b>, struktūrizuotą analizę ir automatizuotų <b>B2B laiškų</b> generavimą.</p>
+        <ul>
+          <li>be serverio</li>
+          <li>be duomenų bazių</li>
+          <li>be išorinių API</li>
+        </ul>
+        <p>Projektas skirtas <b>demonstracijai</b>, koncepcijos validacijai ir kompetencijų parodymui, o ne komerciniam naudojimui.</p>
+        <h3>Ką šis prototipas daro</h3>
+        <ul>
+          <li>Leidžia įvesti įmonės pavadinimą, šalį / regioną ir kontekstą</li>
+          <li>Atlieka lokalią rizikos analizę (rule-based)</li>
+          <li>Sugeneruoja rizikos balą, lygį, komentarą ir struktūruotą santrauką</li>
+          <li>Parengia B2B laiško šabloną pagal riziką ir toną</li>
+          <li>Saugo istoriją tik naršyklėje (localStorage)</li>
+        </ul>
+        <h3>Kodėl ši versija yra DEMO (be API)</h3>
+        <p>Sąmoningai nenaudojami oficialūs API (VMI, Sodra, VIES, sankcijos, kreditingumas ir pan.).</p>
+        <ul>
+          <li>Reikia juridinio asmens, sutarčių, mokamos prieigos ir teisinės atsakomybės</li>
+          <li>Fizinis asmuo realiai negali užbaigti tokio sprendimo teisėtai ir finansiškai</li>
+        </ul>
+        <p>Todėl ši versija demonstruoja logiką, struktūrą ir UX, aiškiai atskiria koncepciją nuo realių integracijų.</p>
+        <h3>Kam skirtas</h3>
+        <ul>
+          <li>HR vadovams – kompetencijų vertinimui</li>
+          <li>Verslo / IT vadovams – koncepcijai</li>
+          <li>B2B procesų analizei</li>
+          <li>Portfeliui</li>
+        </ul>
+        <h3>Techniniai akcentai</h3>
+        <ul>
+          <li>HTML / CSS / JavaScript</li>
+          <li>Viskas naršyklėje</li>
+          <li>Be serverio, be API, be bibliotekų</li>
+          <li>Duomenys – localStorage</li>
+        </ul>
+        <h3>Ateities kryptis</h3>
+        <ul>
+          <li>Phase 2: juridinis asmuo + oficialių API integracija</li>
+          <li>Phase 3: server-side variklis + DB</li>
+        </ul>
+        <p><b>Pastaba:</b> projektas nekomercinis ir demonstracinis; nerodo realių finansinių ar teisinių duomenų.</p>
+        <p style="color:#9ca3af;font-size:11px;">© Donatas Vitenas</p>
+      `
     },
 
     en: {
@@ -693,7 +847,63 @@
       statusNew: "New analysis",
       statusEmailUpdated: "Email template updated",
       statusCopied: "Email copied",
-      confirmClearHistory: "Clear all history?"
+      confirmClearHistory: "Clear all history?",
+
+      aboutBtn: "About",
+      aboutTitle: "Company Risk Analysis (DEMO Prototype)",
+      aboutPrint: "PDF",
+      aboutClose: "Close",
+      aboutHtml: `
+        <h2>Company Risk Analysis (DEMO Prototype)</h2>
+        <p><b>Author:</b> Donatas Vitenas<br/>
+        <b>Status:</b> DEMO / Phase 1<br/>
+        <b>Execution model:</b> Client-side (browser only), no server, no API</p>
+        <hr/>
+        <h3>Project Overview</h3>
+        <p>This is a <b>personal prototype</b> created to demonstrate <b>company risk assessment logic</b>, structured analysis and automated <b>B2B email generation</b>.</p>
+        <ul>
+          <li>no backend server</li>
+          <li>no databases</li>
+          <li>no external APIs</li>
+        </ul>
+        <p>Intended for <b>demonstration</b>, concept validation and portfolio purposes, not commercial use.</p>
+        <h3>What this prototype does</h3>
+        <ul>
+          <li>Input company name, country/region, and business context</li>
+          <li>Local rule-based risk analysis</li>
+          <li>Generates score, level, commentary and structured summary</li>
+          <li>Creates B2B email drafts based on risk and tone</li>
+          <li>Stores history in browser only (localStorage)</li>
+        </ul>
+        <h3>Why this is a DEMO version (no API)</h3>
+        <p>This project intentionally does not use official APIs (tax authorities, registries, sanctions lists, credit bureaus, etc.).</p>
+        <ul>
+          <li>Requires a legal entity, contracts, paid access and legal responsibility</li>
+          <li>A private individual cannot realistically complete such a system legally/financially</li>
+        </ul>
+        <p>Therefore this version focuses on logic, structure and UX, clearly separating concept from real integrations.</p>
+        <h3>Intended audience</h3>
+        <ul>
+          <li>HR managers – competency assessment</li>
+          <li>Business / IT decision-makers – concept evaluation</li>
+          <li>B2B process analysis</li>
+          <li>Personal portfolio</li>
+        </ul>
+        <h3>Technical highlights</h3>
+        <ul>
+          <li>HTML / CSS / JavaScript</li>
+          <li>Fully client-side</li>
+          <li>No server, no APIs, no external libraries</li>
+          <li>Data stored locally (localStorage)</li>
+        </ul>
+        <h3>Future directions</h3>
+        <ul>
+          <li>Phase 2: Legal entity + official API integrations</li>
+          <li>Phase 3: Server-side risk engine + database</li>
+        </ul>
+        <p><b>Disclaimer:</b> non-commercial demo; does not display real financial or legal company data.</p>
+        <p style="color:#9ca3af;font-size:11px;">© Donatas Vitenas</p>
+      `
     }
   };
 
@@ -707,6 +917,20 @@
     const l = getLang();
     return I18N[l] || I18N.lt;
   }
+
+  function openAbout() {
+    const L = langPack();
+    document.getElementById("aboutTitle").textContent = L.aboutTitle;
+    document.getElementById("aboutContent").innerHTML = L.aboutHtml;
+    document.getElementById("btnAboutPrint").textContent = L.aboutPrint;
+    document.getElementById("btnAboutClose").textContent = L.aboutClose;
+    document.getElementById("aboutBackdrop").style.display = "flex";
+  }
+
+  function closeAbout() {
+    document.getElementById("aboutBackdrop").style.display = "none";
+  }
+
   function applyLang() {
     const L = langPack();
     document.documentElement.lang = getLang();
@@ -715,6 +939,7 @@
     document.getElementById("ui_title").textContent = L.title;
     document.getElementById("ui_subtitle").textContent = L.subtitle;
     document.getElementById("ui_badge").textContent = L.badge;
+    document.getElementById("btnAbout").textContent = L.aboutBtn;
 
     // left
     document.getElementById("ui_left_title").textContent = L.leftTitle;
@@ -784,6 +1009,10 @@
     // rerender UI dependent on language
     renderRisk();
     renderHistory();
+
+    // if modal open, refresh its content language too
+    const isOpen = document.getElementById("aboutBackdrop").style.display === "flex";
+    if (isOpen) openAbout();
   }
 
   // =========================
@@ -803,7 +1032,7 @@
     tone: "neutral", // neutral/strict/warm
     updatedAt: null,
 
-    // ROLE SELECTION (NEW)
+    // ROLE SELECTION
     selectedRoles: {
       business: true,
       finance: true,
@@ -852,7 +1081,6 @@
   }
 
   function snapshotForAutosave() {
-    // small stable snapshot to detect changes
     return JSON.stringify({
       companyName: $("companyName").value.trim(),
       country: $("country").value.trim(),
@@ -884,7 +1112,6 @@
     $("rawData").value = state.rawData || "";
     $("riskNotes").value = state.riskNotes || "";
     $("emailTemplate").value = state.emailTemplate || "";
-
     renderRisk();
   }
 
@@ -900,7 +1127,6 @@
     try {
       const data = JSON.parse(raw);
       Object.assign(state, data);
-      // ensure selectedRoles exists (backward compatibility)
       if (!state.selectedRoles) {
         state.selectedRoles = { business:true, finance:true, logistics:true, sales:true, manager:true };
       }
@@ -1012,10 +1238,7 @@
 
   // =========================
   // Risk logic – local rules
-  // (LT + EN keyword support)
   // =========================
-
-  // Tag keys -> localized text
   const TAGS = {
     insolvency: { lt: "Bankroto / nemokumo rizika", en: "Insolvency / bankruptcy risk" },
     overdue: { lt: "Skolų / vėluojančių apmokėjimų rizika", en: "Overdue payments / debt risk" },
@@ -1041,7 +1264,6 @@
     return (map[l] && map[l][levelKey]) || levelKey;
   }
 
-  // Roles – localized names
   function roleName(key){
     const l = getLang();
     const map = {
@@ -1075,60 +1297,49 @@
 
     let score = 5;
     const tagKeys = [];
-
     const text = (state.rawData + " " + state.context).toLowerCase();
 
-    // insolvency/bankruptcy
     if (/(bankrot|nemokum|likviduoj|insolv|bankrupt|liquidat)/i.test(text)) {
       score += 2;
       tagKeys.push("insolvency");
     }
 
-    // overdue/debt
     if (/(skola|neapmok|delspinigi|pradelst|overdue|unpaid|late payment|debt)/i.test(text)) {
       score += 2;
       tagKeys.push("overdue");
     }
 
-    // young
     if (/(nauja įmonė|įkurta 2023|įkurta 2024|įkurta 2025|new company|founded 2023|founded 2024|founded 2025)/i.test(text)) {
       score += 1;
       tagKeys.push("young");
     }
 
-    // dependency
     if (/(didžiausias klientas|1 klientas|priklausomybė|single customer|one customer|dependency)/i.test(text)) {
       score += 1;
       tagKeys.push("dependency");
     }
 
-    // logistics sector
     if (/(logistik|transport|vežėj|freight|carrier|logistics|transportation)/i.test(text)) {
       tagKeys.push("logistics");
     }
 
-    // geopolitical
     if (/(rusij|baltarusi|ukrain|russia|belarus|ukraine)/i.test(text)) {
       score += 1;
       tagKeys.push("geo");
     }
 
-    // positive
     if (/(geras reputacij|patikim|ilgamet|nuolatini|trusted|reliable|long-term|positive reputation)/i.test(text)) {
       score -= 1;
       tagKeys.push("goodrep");
     }
 
-    // transparency
     if (/(skaidrum|audit|finans|ataskait|transparen|audit|financial report|statements)/i.test(text)) {
       score -= 1;
       tagKeys.push("transparency");
     }
 
-    // normalize
     score = Math.max(1, Math.min(10, score));
 
-    // level key
     let levelKey = "unknown";
     if (score <= 3) levelKey = "low";
     else if (score <= 6) levelKey = "mid";
@@ -1136,7 +1347,7 @@
 
     state.riskScore = score;
     state.riskLevelKey = levelKey;
-    state.riskTagKeys = Array.from(new Set(tagKeys)); // unique
+    state.riskTagKeys = Array.from(new Set(tagKeys));
   }
 
   function computeRolesAndTrust() {
@@ -1173,14 +1384,11 @@
     if (tags.has("overdue")) trust -= 1;
     if (tags.has("insolvency")) trust -= 2;
     if (state.riskLevelKey === "high") trust -= 1;
-    if (state.riskLevelKey === "low") trust += 0;
 
     trust = Math.max(1, Math.min(5, trust));
-
     return { business, finance, logistics, sales, manager, trust };
   }
 
-  // ROLE KEYS (NEW)
   const ROLE_KEYS = ["business", "finance", "logistics", "sales", "manager"];
 
   function renderRolesAndTrust() {
@@ -1193,7 +1401,6 @@
 
     const r = computeRolesAndTrust();
 
-    // Roles with user selection (NEW)
     ROLE_KEYS.forEach(key => {
       const row = document.createElement("div");
       row.className = "role-row";
@@ -1222,7 +1429,6 @@
       box.appendChild(row);
     });
 
-    // Stars (unchanged)
     for (let i=1; i<=5; i++){
       const s = document.createElement("span");
       s.className = "star" + (i <= r.trust ? " on" : "");
@@ -1286,8 +1492,6 @@
       : (getLang()==="en" ? "(no tags)" : "(nėra išskirtų rizikos žymų)");
 
     const roles = computeRolesAndTrust();
-
-    // ONLY SELECTED ROLES (NEW)
     const rolesText = ROLE_KEYS
       .filter(k => !!state.selectedRoles[k])
       .map(k => `${roleName(k)}: ${riskLevelText(roles[k])}`)
@@ -1509,6 +1713,28 @@
       setLang(e.target.value);
       applyLang();
       markDirty();
+    });
+
+    // About modal
+    $("btnAbout").addEventListener("click", openAbout);
+    $("btnAboutClose").addEventListener("click", closeAbout);
+    $("aboutBackdrop").addEventListener("click", (e) => {
+      if (e.target && e.target.id === "aboutBackdrop") closeAbout();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeAbout();
+    });
+
+    // About print -> print only modal content
+    $("btnAboutPrint").addEventListener("click", () => {
+      document.body.classList.add("print-about");
+      // ensure modal visible
+      $("aboutBackdrop").style.display = "flex";
+      window.print();
+    });
+
+    window.addEventListener("afterprint", () => {
+      document.body.classList.remove("print-about");
     });
 
     // Auto-save every 2 seconds ONLY if changed
